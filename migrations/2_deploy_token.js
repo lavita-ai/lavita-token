@@ -45,13 +45,13 @@ module.exports = async function (deployer, network, accounts) {
 
 function getMinterAddress(network) {
     if (network == ThetaPrivatenet) {
-        return "";
+        return "0x2E833968E5bB786Ae419c4d13189fB081Cc43bab";
     } else if (network == ThetaTestnet) {
-        return "";
+        return "0x2E833968E5bB786Ae419c4d13189fB081Cc43bab";
     } else if (network == ThetaMainnet) {
         return "0x62172bD5425D4d2c52be72cdf84E47Fe234c211d";
     } else if (network == Ganache) {
-        return "0x0000000000000000000000000000000000000000";
+        return "0x2E833968E5bB786Ae419c4d13189fB081Cc43bab";
     } else {
         throw "Invalid network!"
     }
