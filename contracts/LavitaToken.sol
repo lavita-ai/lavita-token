@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity ^0.8.7;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -18,6 +18,7 @@ contract LavitaToken is ERC20 {
     uint256 public maxSupply;
     address public minter;
     address public admin;
+    address public pendingAdmin;
 
     constructor(
         string memory name_,
@@ -30,6 +31,11 @@ contract LavitaToken is ERC20 {
         uint256 initMintAmount_,
         address admin_
     ) ERC20(name_, symbol_) {
+        require(admin_ != address(0x0), "invalid admin address");
+        require(minter_ != address(0x0), "invalid minter_ address");
+        require(initDistrWallet_ != address(0x0), "invalid initDistrWallet_ address");
+        require(decimals_ != 0, "invalid decimals");
+        require(maxSupply_ != 0, "invalid maxSupply");
         require(maxSupply_ < 2 ** 96, "maxSupply too large"); // if maxSupply is too large, it may lead to problems in staking reward calculation
         require(
             initMintAmount_ <= maxSupply_,
@@ -56,7 +62,7 @@ contract LavitaToken is ERC20 {
         address account,
         uint256 amount
     ) external minterOnly returns (bool) {
-        if (msg.sender != minter) {
+        if (account == address(0x0)) {
             return false;
         }
         uint256 currentSupply = this.totalSupply();
@@ -88,13 +94,22 @@ contract LavitaToken is ERC20 {
         emit UpdateMinter(minter);
     }
 
-    function updateAdmin(address admin_) external adminOnly {
-        admin = admin_;
+    function setPendingAdmin(address admin_) external adminOnly {
+        pendingAdmin = admin_;
+    }
+
+    function updateAdmin() external pendingAdminOnly {
+        admin = pendingAdmin;
         emit UpdateAdmin(admin);
     }
 
     modifier adminOnly() {
         require(msg.sender == admin, "Only admin can make this call");
+        _;
+    }
+
+    modifier pendingAdminOnly() {
+        require(msg.sender == pendingAdmin, "Only pending admin can make this call");
         _;
     }
 

@@ -30,14 +30,31 @@ contract("Lavita Token Basics", accounts => {
   });
 
   it("admin permission tests", async () => {
-    errStr = "Returned error: VM Exception while processing transaction: revert Only admin can make this call"
-    await truffleAssert.reverts(lavitaToken.updateStakerRewardPerBlock(8888, {from: alice}), errStr);
-    await truffleAssert.reverts(lavitaToken.updateMinter(bob, {from: alice}), errStr);
-    await truffleAssert.reverts(lavitaToken.updateAdmin(bob, {from: alice}), errStr);
+    let errMsg = "Returned error: VM Exception while processing transaction: revert Only admin can make this call"
+    await truffleAssert.reverts(lavitaToken.updateStakerRewardPerBlock(8888, {from: alice}), errMsg);
+    await truffleAssert.reverts(lavitaToken.updateMinter(bob, {from: alice}), errMsg);
+    await truffleAssert.reverts(lavitaToken.setPendingAdmin(bob, {from: alice}), errMsg);
+
+    errMsg = "Returned error: VM Exception while processing transaction: revert Only pending admin can make this call"
+    await truffleAssert.reverts(lavitaToken.updateAdmin({from: alice}), errMsg);
   });
 
   it("admin changes and token minting", async () => {
-    await lavitaToken.updateAdmin(alice, {from: admin});
+    await lavitaToken.setPendingAdmin(alice, {from: admin});
+    adm = await lavitaToken.admin();
+    pendingAdm = await lavitaToken.pendingAdmin();
+    assert.equal(adm, admin, "Incorrect admin"); // admin should not have changed yet
+    assert.equal(pendingAdm, alice, "Incorect pending admin"); // the pending admin should have been set to alice
+
+    let errMsg = "Returned error: VM Exception while processing transaction: revert Only admin can make this call"
+    await truffleAssert.reverts(lavitaToken.updateMinter(bob, {from: alice}), errMsg); // the admin has not changed yet
+
+    errMsg = "Returned error: VM Exception while processing transaction: revert Only pending admin can make this call"
+    await truffleAssert.reverts(lavitaToken.updateAdmin({from: admin}), errMsg); // the original admin cannot make this call
+
+    await lavitaToken.updateAdmin({from: alice}) // the pending admin sets the admin to herself
+    adm = await lavitaToken.admin();
+    assert.equal(adm, alice, "Incorrect admin"); // admin should have changed to alice
 
     // Now alice becomes the admin, she can change stakerRewardPerBlock
     newStakerRewardPerBlock = new BN(8888);
@@ -60,7 +77,7 @@ contract("Lavita Token Basics", accounts => {
     let carolBalance = await lavitaToken.balanceOf(carol);
     assert.equal(carolBalance.toString(), new BN(0).toString(), "Incorrect balance");
 
-    let errMsg = "Returned error: VM Exception while processing transaction: revert Only minter can make this call";
+    errMsg = "Returned error: VM Exception while processing transaction: revert Only minter can make this call";
     await truffleAssert.reverts(lavitaToken.mintStakerReward(carol, mintAmount, {from: alice}), errMsg); // Alice should not be able to mint tokens
     carolBalance = await lavitaToken.balanceOf(carol);
     assert.equal(carolBalance.toString(), new BN(0).toString(), "Incorrect balance");
