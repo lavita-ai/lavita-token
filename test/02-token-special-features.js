@@ -82,7 +82,7 @@ contract("Lavita Token Basics", accounts => {
     carolBalance = await lavitaToken.balanceOf(carol);
     assert.equal(carolBalance.toString(), new BN(0).toString(), "Incorrect balance");
 
-    lavitaToken.mintStakerReward(carol, mintAmount, {from: bob}); // Bob should be able to mint tokens
+    await lavitaToken.mintStakerReward(carol, mintAmount, {from: bob}); // Bob should be able to mint tokens
     carolBalance = await lavitaToken.balanceOf(carol);
     assert.equal(carolBalance.toString(), mintAmount.toString(), "Incorrect balance");
   });
