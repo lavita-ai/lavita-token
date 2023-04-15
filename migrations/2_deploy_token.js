@@ -13,9 +13,9 @@ const LavitaToken = artifacts.require("LavitaToken")
 let name = "Lavita Token";
 let symbol = "LAVITA";
 let decimal = 18;
-let maxSupply = dec18.mul(new BN(8000000000)); // FIXME: set proper value
+let maxSupply = dec18.mul(new BN(8000000000));
 let minter;
-let stakerRewardPerBlock = 10; // FIXME: set proper value
+let stakerRewardPerBlock = dec18.mul(new BN(58));
 let initDistrWallet;
 let initMintAmount;
 let admin;
@@ -24,9 +24,9 @@ module.exports = async function (deployer, network, accounts) {
 
     minter = getMinterAddress(network);
     if (network == ThetaMainnet) { // the Mainnet
-        initDistrWallet = ""; // FIXME: set proper value
-        initMintAmount = 0; // FIXME: set proper value
-        admin = ""; // FIXME: set proper value
+        initDistrWallet = "0xa3ef2b71ebcd1e2172aca0312af532037e534893";
+        initMintAmount = dec18.mul(new BN(6800000000));
+        admin = "0xa3ef2b71ebcd1e2172aca0312af532037e534893";
     } else { // all the other testing networks
         initDistrWallet = "0x2E833968E5bB786Ae419c4d13189fB081Cc43bab";
         initMintAmount = dec18.mul(new BN(1000000000));
